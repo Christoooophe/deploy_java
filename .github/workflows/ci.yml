@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - prod
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: install checkout
+        uses: actions/checkout@v4
+
+      - name: setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
+      - name: Build jar
+        run: ./mvnw clean package -DskipTests
+
+#      - name: Trivy
+#        uses: aquasecurity/trivy-action@master
+#        with:
+#          image-ref: node:26-alpine3.24
+#          format: 'table'
+#          severity: 'CRITICAL,HIGH,MEDIUM'
+#          exit-code: 0
+#          ignore-unfixed: 'false'
+
+#  renovate:
+#    needs: build_docker
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Run Renovate
+#        uses: renovatebot/github-action@v46.1.17
+#        env:
+#          RENOVATE_REPOSITORIES: ${{ github.repository }}
+#        with:
+#          token: ${{ secrets.RENOVATE_TOKEN }}

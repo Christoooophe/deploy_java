@@ -1,0 +1,50 @@
+services:
+
+  app:
+    container_name: app
+    build: .
+    networks:
+      - java-app
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: your_password_here
+    tty: true
+
+  postgres:
+    container_name: postgres
+    image: postgres:18-alpine3.24
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - java_data:/var/lib/postgresql/18/docker
+    networks:
+      - java-app
+
+  redis:
+    container_name: redis
+    image: redis:8.8-alpine3.23
+    volumes:
+      - java_redis_data:/data
+    environment:
+      - REDIS_ARGS=${REDIS_ARG}
+    networks:
+      - java-app
+
+networks:
+  java-app:
+    driver: bridge
+
+volumes:
+  java_data:
+  java_redis_data:
+    driver: local
