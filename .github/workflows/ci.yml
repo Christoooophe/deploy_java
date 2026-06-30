@@ -39,15 +39,6 @@ jobs:
       - name: Build jar
         run: ./mvnw clean package -DskipTests
 
-#      - name: Trivy
-#        uses: aquasecurity/trivy-action@master
-#        with:
-#          image-ref: node:26-alpine3.24
-#          format: 'table'
-#          severity: 'CRITICAL,HIGH,MEDIUM'
-#          exit-code: 0
-#          ignore-unfixed: 'false'
-
 #  renovate:
 #    needs: build_docker
 #    runs-on: ubuntu-latest

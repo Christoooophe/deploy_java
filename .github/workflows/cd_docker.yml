@@ -3,7 +3,7 @@ name: cd_docker
 on:
   push:
     branches:
-      - mainEEEE
+      - main
 
 permissions:
   contents: read
@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Normalize image name
         id: image
@@ -39,6 +39,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha,prefix=sha-
+            type=raw,value=latest
 
       - name: Build and push to GHCR
         uses: docker/build-push-action@v7
@@ -51,41 +52,19 @@ jobs:
           cache-from: type=registry,ref=${{ steps.image.outputs.name }}:cache
           cache-to: type=registry,ref=${{ steps.image.outputs.name }}:cache,mode=max
 
-  deployed:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: checkout
-        uses: actions/checkout@v7
-
-      - name: copy docker compose to my server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.KEY }}
-          source: "compose.prod.yml"
-          target: "var/www/httpdocs"
-
-      - name: generate .env
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.KEY }}
-          script: |
-            cd /var/www/httpdoc/app
-            cat > .env << 'EOF'
-            POSTGRES_DB=${{ secrets.PG_DB }}
-            POSTGRES_USER=${{ secrets.PG_USER }}
-            POSTGRES_PASSWORD=${{ secrets.PG_PASSWORD }}
-            REDIS_ARG=${{ secrets.REDIS_ARG }}
-            EOF
-
-            echo "$GHCR_TOKEN" | login gchr.io -u ${{ github.actor }} --password-stdin
-            
-            docker compose -f compose.prod.yml down || true
-            docker compose -f compose.prod.yml pull
-            docker compose -f compose.prod.yml up -d
-            docker image prune -f
+#  deployed:
+#    needs: build-and-push
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: checkout
+#        uses: actions/checkout@v7
+#
+#      - name: deploy on server
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USER }}
+#          key: ${{ secrets.KEY }}
+#          source: "compose.prod.yml"
+#          target: "var/www/httpdocs"
