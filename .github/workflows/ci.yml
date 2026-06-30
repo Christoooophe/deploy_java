@@ -17,6 +17,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: back
+
     steps:
       - name: install checkout
         uses: actions/checkout@v4
@@ -27,6 +31,7 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
+          cache-dependency-path: back/pom.xml
 
       - name: Make mvnw executable
         run: chmod +x mvnw
